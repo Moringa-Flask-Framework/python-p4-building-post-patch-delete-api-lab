@@ -45,5 +45,52 @@ def most_expensive_baked_good():
     most_expensive_serialized = most_expensive.to_dict()
     return make_response( most_expensive_serialized,   200  )
 
+@app.route('/baked_goods', methods= ['GET', 'POST','DELETE'])
+def baked_goods():
+    baked= BakedGood.query.all()
+    bake=[]
+    if request.method== 'GET':
+        for bak in baked:
+            baked_dict= bak.to_dict()
+            bake.append(baked_dict)
+        response= make_response(bake, 200)
+        return response
+    elif request.method== 'POST':
+        new_bakery= Bakery(
+            name= request.form.get('name'),
+        )
+        db.session.add(new_bakery)
+        db.session.commit()
+        bakers_dict= new_bakery.to_dict()
+        response= make_response(bakers_dict, 200)
+        return response
+    
+@app.route('/bakeries/<int:id>',method= ['PATCH'])
+def update_bakery(id):
+    baker= Bakery.query.filter(Bakery.id==id).first()
+    if not baker:
+        response= make_response("Invalid id", 404)
+        return response
+    else:
+        for attr in request.form:
+            setattr(baker, attr,request.form.get[attr])
+        db.session.add(baker)
+        db.session.commit()
+
+        bakery_dict= baker.to_dict()
+        response= make_response(bakery_dict ,200)
+        return response
+@app.route('/baked_goods/<int:id>', method=['DELETE'])
+def delete_baked_good(id):
+    baked_item= BakedGood.query.filter(BakedGood.id ==id)
+    if baked_item is None:
+        response = make_response("Item does not exist.", 404)
+        return response
+    else:
+        db.session.delete(baked_item)
+        db.session.commit()
+        response= make_response("Successfully deleted the item.", 200)
+
+
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
